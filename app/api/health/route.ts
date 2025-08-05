@@ -46,13 +46,14 @@ export async function GET() {
       status: allServicesHealthy ? 200 : 503,
     });
   } catch (error) {
-    console.error("Health check failed:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal server error";
 
     return NextResponse.json(
       {
         status: "unhealthy",
         timestamp: new Date().toISOString(),
-        error: error.message,
+        error: errorMessage,
         services: {
           mongodb: "unknown",
           redis: "unknown",

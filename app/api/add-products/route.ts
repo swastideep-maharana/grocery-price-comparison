@@ -93,12 +93,13 @@ export async function POST(
     };
 
     return NextResponse.json(response, { status: 200 });
-  } catch (error: any) {
-    console.error("Add products API error:", error);
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal server error";
 
     const errorResponse: ErrorResponse = {
       status: "ERROR",
-      message: error.message || "Internal server error",
+      message: errorMessage,
       code: "ADD_PRODUCTS_FAILED",
     };
 
