@@ -20,7 +20,6 @@ export default function OTPForm({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    // Start resend timer
     setResendTimer(30);
     const timer = setInterval(() => {
       setResendTimer((prev) => {
@@ -31,18 +30,16 @@ export default function OTPForm({
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return; 
+    if (value.length > 1) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-   
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -66,16 +63,10 @@ export default function OTPForm({
 
     try {
       onLoading(true);
-
       const response = await fetch("/api/submit-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          otp: otpString,
-          sessionId,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp: otpString, sessionId }),
       });
 
       const data = await response.json();
@@ -84,7 +75,6 @@ export default function OTPForm({
         onSuccess(data.sessionData);
       } else {
         setError(data.message || "Invalid OTP. Please try again.");
-       
         setOtp(["", "", "", "", "", ""]);
         inputRefs.current[0]?.focus();
       }
@@ -102,20 +92,16 @@ export default function OTPForm({
     try {
       onLoading(true);
       setError("");
-
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phoneNumber: "", 
-          platform: "blinkit", 
+          phoneNumber: "", // Optional: pass phoneNumber if needed
+          platform: "blinkit",
         }),
       });
 
       const data = await response.json();
-
       if (data.status === "OTP_SENT") {
         setResendTimer(30);
         setError("");
@@ -144,7 +130,6 @@ export default function OTPForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-      
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
             Enter 6-digit OTP
@@ -153,7 +138,9 @@ export default function OTPForm({
             {otp.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
                 type="text"
                 value={digit}
                 onChange={(e) =>
@@ -169,14 +156,12 @@ export default function OTPForm({
           </div>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={otp.join("").length !== 6}
@@ -185,7 +170,6 @@ export default function OTPForm({
           Verify OTP
         </button>
 
-        {/* Resend OTP */}
         <div className="text-center">
           <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
           <button
@@ -199,7 +183,6 @@ export default function OTPForm({
         </div>
       </form>
 
-      {/* Help Text */}
       <div className="mt-8 p-4 bg-blue-50 rounded-lg">
         <h3 className="text-sm font-medium text-blue-900 mb-2">💡 Tips</h3>
         <ul className="text-sm text-blue-800 space-y-1">
