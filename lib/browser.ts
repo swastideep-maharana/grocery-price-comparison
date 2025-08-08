@@ -33,10 +33,15 @@ class BrowserManager {
   async createContext(sessionId: string): Promise<BrowserContext> {
     const browser = await this.initializeBrowser();
     const context = await browser.createIncognitoBrowserContext();
+    return context;
+  }
+
+  async createPage(context: BrowserContext): Promise<Page> {
+    const page = await context.newPage();
 
     // Block non-essential resources for performance
-    await context.setRequestInterception(true);
-    context.on("request", (req) => {
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
       const resourceType = req.resourceType();
       if (["font", "image", "stylesheet", "media"].includes(resourceType)) {
         req.abort();
@@ -46,7 +51,7 @@ class BrowserManager {
     });
 
     // Bypass CSP
-    await context.addInitScript(() => {
+    await page.evaluateOnNewDocument(() => {
       // Remove CSP headers
       const originalFetch = window.fetch;
       window.fetch = function (...args) {
@@ -61,12 +66,6 @@ class BrowserManager {
         return originalFetch(url, newOptions);
       };
     });
-
-    return context;
-  }
-
-  async createPage(context: BrowserContext): Promise<Page> {
-    const page = await context.newPage();
 
     // Set user agent
     await page.setUserAgent(
